@@ -1,0 +1,14 @@
+{
+    "applications": {
+        "Note": {
+            "applicationId": "N7zeSdAYWMZRthpwKNis4hjVoLn0PqOOnIL4OEK2", 
+            "masterKey": "Ka1ItVVK65B2WHPHuhSCb1LCTImNlvrV9FWHo37p"
+        }, 
+        "_default": {
+            "link": "Note"
+        }
+    }, 
+    "global": {
+        "parseVersion": "1.2.17"
+    }
+}

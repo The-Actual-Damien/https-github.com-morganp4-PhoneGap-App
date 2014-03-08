@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Place Autocomplete</title>
+        <meta content="initial-scale=1.0, user-scalable=no" name="viewport">
+        <meta charset="utf-8">
+        <style>
+            html,
+            body,
+            #map-canvas {
+                height: 100%;
+                margin: 0px;
+                padding: 0px;
+            }
+            .controls {
+                -moz-box-sizing: border-box;
+                border-radius: 2px 0em 0em 2px;
+                border: 1px solid transparent;
+                box-shadow: 0em 2px 6px rgba(0, 0, 0, 0.3);
+                box-sizing: border-box;
+                height: 32px;
+                margin-top: 16px;
+                outline: none;
+            }
+            #pac-input {
+                background-color: #fff;
+                font-family: Roboto;
+                font-size: 15px;
+                font-weight: 300;
+                padding: 0em 11px 0em 13px;
+                text-overflow: ellipsis;
+                width: 400px;
+            }
+            #pac-input:focus {
+                border-color: #4d90fe;
+                margin-left: -1px;
+                padding-left: 14px;
+                /* Regular padding-left + 1. */
+                width: 401px;
+            }
+            .pac-container {
+                font-family: Roboto;
+            }
+            #type-selector {
+                background-color: #4d90fe;
+                color: #fff;
+                padding: 5px 11px 0px;
+            }
+            #type-selector label {
+                font-family: Roboto;
+                font-size: 13px;
+                font-weight: 300;
+            }
+            }
+        </style>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
+        <script src="/javascripts/jquery.min.js" type="text/javascript"></script>
+        <script src="/javascripts/parse.min.js"></script>
+        <script>
+            Parse.initialize("jRXVsZkR2lXk7riaMoFpmVbjoYAyiZvgozzVgJpY", "UBc1sBjyo3DYGgA8UuTpvpFOZvgZvNUJ3Fs9UzZ2");
+            //var longt;var lat;var startLongt;var startLat;var map;var point2;
+             var longt = 88888;
+                var lat;
+                var startLongt;
+                var startLat;
+                var map;
+                var point;
+                var point2;
+                var PlaceObject = Parse.Object.extend("PlaceObject");////create object
+                var placeObject2 = new PlaceObject();///instance
+            function initialize() {
+                alert('initfunc');
+                watchID = navigator.geolocation.getCurrentPosition(geolocationDataReceived, geolocationError, {
+                    enableHighAccuracy: true,
+                    timeout           : 5000,
+                    maximumAge        : 30000
+                });
+                alert(startLat);
+            }
+            function geolocationDataReceived(position) {
+                alert(longt);
+            //    Parse.initialize("N7zeSdAYWMZRthpwKNis4hjVoLn0PqOOnIL4OEK2", "VYVtyKd3aqh0UpEtvnW9CFoiWq6E00Qz4fInvi0g");
+                var currentPosition = position;
+                startLat = currentPosition.coords.latitude;
+                alert('gps');
+                startLongt = currentPosition.coords.longitude;
+                point = new Parse.GeoPoint({
+                    latitude : startLat,
+                    longitude: startLongt
+                });
+                //placeObject2.set("startLocation", point);
+                alert('point2'+point.latitude);
+                //placeObject2.save();
+                var mapOptions = {
+                        center: new google.maps.LatLng(currentPosition.coords.latitude, currentPosition.coords.longitude),
+                        zoom  : 13
+                };
+                map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+                var input = /** @type {HTMLInputElement} */
+                    (document.getElementById('pac-input'));
+
+                var types = document.getElementById('type-selector');
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+                map.controls[google.maps.ControlPosition.TOP_LEFT].push(types);
+
+                var autocomplete = new google.maps.places.Autocomplete(input);
+                autocomplete.bindTo('bounds', map);
+
+                var infowindow = new google.maps.InfoWindow();
+                var marker = new google.maps.Marker({
+                        map: map
+                    });
+
+                google.maps.event.addListener(autocomplete, 'place_changed', function () {
+                    alert(longt);
+                    infowindow.close();
+                    marker.setVisible(false);
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) {
+                        return;
+                    }
+
+                    // If the place has a geometry, then present it on a map.
+                    if (place.geometry.viewport) {
+                        //var PlaceObject = Parse.Object.extend("PlaceObject");
+                        //var placeObject3 = new PlaceObject();
+
+                        lat = place.geometry.location.lat();
+                        alert(lat);
+                        longt = place.geometry.location.lng();
+                        placeObject2.set("startLocation", point);
+                        placeObject2.set("destinationLatitude", lat);
+                        placeObject2.set("destinationLongtitude", longt);
+                        alert(999);
+                        placeObject2.save( {
+                            success: function (placeObject2) {
+                                //Execute any logic that should take place after the object is saved.
+                                alert('New object created with objectId: ' + gameScore.id);
+                            },
+                            error  : function (placeObject2, error) {
+                                // Execute any logic that should take place if the save fails.
+                                // error is a Parse.Error with an error code and description.
+                               alert('Failed to create new object, with error code: ' + error.description+error.code+error.message);
+                          }
+                        });
+                        map.fitBounds(place.geometry.viewport);
+                    } else {
+                        map.setCenter(place.geometry.location);
+                        map.setZoom(17); // Why 17? Because it looks good.
+                    }
+                    marker.setIcon(
+                    /** @type {google.maps.Icon} */
+                    ({
+                        url       : place.icon,
+                        size      : new google.maps.Size(71, 71),
+                        origin    : new google.maps.Point(0, 0),
+                        anchor    : new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(35, 35)
+                    }));
+                    marker.setPosition(place.geometry.location);
+                    marker.setVisible(true);
+
+                    var address = '';
+                    if (place.address_components) {
+                        address = [
+                            (place.address_components[0] && place.address_components[0].short_name || ''), (place.address_components[1] && place.address_components[1].short_name || ''), (place.address_components[2] && place.address_components[2].short_name || '')
+                        ].join(' ');
+                    }
+
+                    infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+                    infowindow.open(map, marker);
+                });
+
+                // Sets a listener on a radio button to change the filter type on Places
+                // Autocomplete.
+
+                function setupClickListener(id, types) {
+                    var radioButton = document.getElementById(id);
+                    google.maps.event.addDomListener(radioButton, 'click', function () {
+                        autocomplete.setTypes(types);
+                    });
+                }
+
+                setupClickListener('changetype-all', []);
+                setupClickListener('changetype-establishment', ['establishment']);
+                setupClickListener('changetype-geocode', ['geocode']);
+                //navigator.geolocation.clearWatch(watchID);
+            }
+            function geolocationError(error) {
+                alert('Geolocation error! \n\n Error code: ' + error.code + '\n' + 'Error message: ' + error.message);
+            }
+
+
+            google.maps.event.addDomListener(window, 'load', initialize);
+        </script>
+    </head>
+    <body>
+        <input class="controls" id="pac-input" placeholder="Enter your destination" type="text">
+        <div class="controls" id="type-selector">
+            <input checked="checked" id="changetype-all" name="type" type="radio">
+            <label for="changetype-all">All</label>
+            <input id="changetype-establishment" name="type" type="radio">
+            <label for="changetype-establishment">Establishments</label>
+            <input id="changetype-geocode" name="type" type="radio">
+            <label for="changetype-geocode">Geocodes</label>
+        </div>
+        <div id="map-canvas"></div>
+    </body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cordova Geolocation Example</title>
+
+    <link rel="stylesheet" href="vendor/topcoat/css/topcoat-mobile-light.css" />
+    <link rel="stylesheet" href="stylesheets/application.css" />
+
+    <!-- cordova.js is served from localhost to ensure the correct version -->
+    <script src="http://localhost/cordova.js"></script>
+    <script src="/components/steroids-js/steroids.js"></script>
+    <!--<script src="/javascripts/application.js"></script>-->
+    <script type="text/javascript" src="/javascripts/jquery.min.js"></script>
+    <script src="/javascripts/parse.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=API_KEY&sensor=true"></script>
+
+    <script>
+    // Parse.initialize("N7zeSdAYWMZRthpwKNis4hjVoLn0PqOOnIL4OEK2", "VYVtyKd3aqh0UpEtvnW9CFoiWq6E00Qz4fInvi0g");
+
+    // Define our results DOM element object
+    var resultsElem = null;
+    var currentPosition;
+    var placeObject = new Parse.Object("PlaceObject");
+    var longt;
+    var lat;
+    // Wait for Cordova to load
+    document.addEventListener("deviceready", onDeviceReady, false);
+    document.addEventListener('deviceready', initializeMap, false);
+    function onDeviceReady() {
+        watchID = navigator.geolocation.watchPosition(geolocationDataReceived, geolocationError, { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 });
+        resultsElem = document.querySelector('#geolocation-results');
+        Parse.initialize("N7zeSdAYWMZRthpwKNis4hjVoLn0PqOOnIL4OEK2", "VYVtyKd3aqh0UpEtvnW9CFoiWq6E00Qz4fInvi0g");
+    }
+    function geolocationDataReceived(position) {
+    	//Parse.initialize("N7zeSdAYWMZRthpwKNis4hjVoLn0PqOOnIL4OEK2", "VYVtyKd3aqh0UpEtvnW9CFoiWq6E00Qz4fInvi0g");
+		currentPosition = position ;
+        lat = currentPosition.coords.latitude;
+        alert(1);
+        longt = currentPosition.coords.longitude;
+        var point = new Parse.GeoPoint({latitude: lat, longitude: longt});
+        var placeObject = new Parse.Object("PlaceObject");
+    	placeObject.set("location", point);
+    	placeObject.save();
+    	//navigator.geolocation.clearWatch(watchID);
+
+    }
+
+    function initializeMap() {
+    var mapOptions = {
+        center: new google.maps.LatLng(43.069452, -89.411373),
+        zoom: 11,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    var map = new google.maps.Map(document.getElementById("map"), mapOptions);
+}
+
+    // The error callback receives a PositionError object
+    function geolocationError(error) {
+        alert('Geolocation error! \n\n Error code: ' + error.code + '\n' + 'Error message: ' + error.message);
+    }
+    
+
+    </script>
+  </head>
+  <body>
+    <div class="content-padded">
+      <h1>Geolocation Example</h1>
+      <p id="geolocation-results">Waiting for geolocation data...</p>
+    </div>
+    <div id="map">
+    <style type="text/css">
+    html, body, #map
+    {
+        height: 100%;
+    }
+    #map
+    {
+        width: 100%;
+    }
+		</style>
+
+
+
+    </div>
+  </body>
+</html> 
+
