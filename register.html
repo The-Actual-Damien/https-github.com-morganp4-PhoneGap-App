@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
+
+    <title>Register Page</title>
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap-3.1.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="signin.css" rel="stylesheet">
+     <!-- parse-core-library -->
+    <script src="JS/parse-1.2.17.min.js"></script>
+    <!-- jquery-core-library -->
+    <script type="text/javascript" src="JS/jquery-2.1.0.js"></script>
+
+    <script>
+
+	// used to identify Application on Parse database
+    Parse.initialize("pSzj4ZkShMuTNvzqN5DWrXfLMOPWyyiETP5zHaMR",
+					"duMzUDUfV37TSl9yQe7YZESJeWzussamkrSuU2m2"); 
+
+	  //upon page loading run initApp function
+      $(document).ready(function() {
+          initApp();
+       });
+
+      function initApp() {
+        
+        $("#form-signin").on("submit", function(e) {
+
+              e.preventDefault();
+
+			       // call will asynchronously create a new user in your Parse App.
+              var user = new Parse.User();
+			  
+              userName = $("#nameInput").val();
+              userPassword = $("#passwordInput").val();
+              userEmail = $("#emailInput").val();
+
+              user.set("username", userName);
+              user.set("password", userPassword);
+              user.set("email",    userEmail);
+ 
+			
+              user.signUp(null, {
+                success: function(user) {
+                   alert("You have sucsessfully registered.")
+				           document.getElementById("form-login").reset();
+                },
+                error: function(user, error) {
+                  // Show the error message somewhere and clear data
+                   alert("You have sucsessfully registered");
+                   document.getElementById("form-signin").reset();
+                }
+              });
+
+         });
+      }
+
+      </script>
+  </head>
+
+  <body>
+    <div class="container">
+
+      <form id="form-signin" role="form">
+        <h2 class="form-signin-heading">Please enter details below</h2>
+        <input type="userName" class="form-control" id ="nameInput" placeholder="User Name" required autofocus>
+        <input type="userPassword" class="form-control" id = "passwordInput" placeholder="Password" required>
+        <input type="userEmail" class="form-control" id = "emailInput" placeholder="Email Address" required>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+
+    </div> <!-- /container -->
+  </body>
+</html>
