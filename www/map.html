@@ -6,7 +6,210 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="stylesheets/application.css" /><>
         <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
+        <script src="/<!DOCTYPE html>
+<html>
+    <head>
+        <title>Place Autocomplete</title>
+        <meta content="initial-scale=1.0, user-scalable=no" name="viewport">
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="stylesheets/application.css" /><>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
         <script src="/javascripts/jquery.min.js" type="text/javascript"></script>
+        <script src="/javascripts/parse.min.js"></script>
+        <script>
+            Parse.initialize("jRXVsZkR2lXk7riaMoFpmVbjoYAyiZvgozzVgJpY", "UBc1sBjyo3DYGgA8UuTpvpFOZvgZvNUJ3Fs9UzZ2");
+                var longt;
+                var lat;
+                var startLongt;
+                var startLat;
+                var infowindow2;
+                var map;
+                var input;
+                var types;
+                var autocomplete;
+                var point;
+                var startMarker;
+                var marker2;
+                var set= false;
+                var point2;
+                var PlaceObject = Parse.Object.extend("PlaceObject");////create object
+                var placeObject2 = new PlaceObject();///instance
+                //start on app start up and starts gps
+            function initialize() {
+                watchID = navigator.geolocation.getCurrentPosition(geolocationDataReceived, geolocationError, {
+                    enableHighAccuracy: true,
+                    timeout           : 5000,
+                    maximumAge        : 30000
+                });
+            }
+
+            function setupMarkerListener(marker){
+                google.maps.event.addListener(marker, 'click', function () {
+                set = true;
+                alert('set is true');
+                point = new Parse.GeoPoint({
+                  latitude : startLat,
+                  longitude: startLongt
+                });
+                   
+                   $("#pac-input").attr("placeholder", "Enter destination location").placeholder();
+                 });
+                marker.setVisible(true);
+              }
+                  function mapSetup(startLat1, startLong1){ 
+          var mapOptions = {
+            center: new google.maps.LatLng(startLat1, startLong1),
+            zoom  : 13
+          }     ;
+          alert('moohhh');
+          map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+          //input for places
+
+              input =(document.getElementById('pac-input'));
+              types = document.getElementById('type-selector');
+              map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+              map.controls[google.maps.ControlPosition.TOP_LEFT].push(types);
+              autocomplete = new google.maps.places.Autocomplete(input);
+              autocomplete.bindTo('bounds', map);
+              //marker to show start point 
+              startMarker = new google.maps.Marker({
+                map: map
+              });
+              marker2 = new google.maps.Marker({
+                map: map
+              });///////////////////////////////////
+            }
+
+            function geolocationDataReceived(position) {
+                alert('Geolocation start'); 
+                var currentPosition = position;              
+               
+                startLat = currentPosition.coords.latitude;
+                startLongt = currentPosition.coords.longitude;
+                //sets map to display current lat and longtitude
+                mapSetup(startLat,startLongt);
+
+                var LatLng = new google.maps.LatLng(startLat, startLongt);
+
+                startMarker.setPosition(LatLng);
+                setupMarkerListener(startMarker);
+                alert('marker listener set up');
+                startMarker.setVisible(true);
+                //Text InfoWindow to tell user to clcik marker if they would like to use current locatiron as start
+                infowindow2 = new google.maps.InfoWindow(); 
+                infowindow2.setContent('Click to use current location as'+'</strong><br>'+'start point'+'</strong><br>'+'</strong><br>');
+                infowindow2.open(map, startMarker);
+                google.maps.event.addListener(autocomplete, 'place_changed', function () {
+                    alert(longt);
+                                       ////
+                    startMarker.setVisible(false);
+                    var place = autocomplete.getPlace();
+                    if (!place.geometry) {
+                        return;
+                    }
+                    // If the place has a geometry, then present it on a map.
+                    if (place.geometry.viewport) {
+                        //var PlaceObject = Parse.Object.extend("PlaceObject");
+                        //var placeObject3 = new PlaceObject();
+                        lat = place.geometry.location.lat();
+                        longt = place.geometry.location.lng();
+                        if(set){    
+                            placeObject2.set("destinationLatitude", lat);
+                            placeObject2.set("destinationLongtitude", longt);
+
+                        }                                                
+                        //$("#pac-input").attr("placeholder", "enetr hfhd jddjfdhf").placeholder();
+
+                        else{
+                            point = new Parse.GeoPoint({
+                            latitude : lat,
+                            longitude: longt  
+                                               // $("#pac-input").attr("placeholder", "enetr hfhd jddjfdhf").placeholder();
+                        });
+                            set = true;
+                        }
+
+
+                        placeObject2.set("startLocation", point);
+                        
+                        alert(999);
+                        if (set) {
+                        placeObject2.save( {
+                            success: function (placeObject2) {
+                                //Execute any logic that should take place after the object is saved.
+                                alert('New object created with objectId: ' + placeObject2.id);
+                            },
+                            error  : function (placeObject2, error) {
+                                // Execute any logic that should take place if the save fails.
+                                // error is a Parse.Error with an error code and description.
+                               alert('Failed to create new object, with error code: ' + error.description+error.code+error.message);
+                          }
+                        });
+                    }
+                        map.fitBounds(place.geometry.viewport);
+                    } else {
+                        map.setCenter(place.geometry.location);
+                        map.setZoom(17); // Why 17? Because it looks good.
+                    }
+                    ///sets the icon property
+                    marker2.setIcon(
+                    /** @type {google.maps.Icon} */
+                    ({
+                        url       : place.icon,
+                        size      : new google.maps.Size(71, 71),
+                        origin    : new google.maps.Point(0, 0),
+                        anchor    : new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(35, 35)
+                    }));
+                    marker2.setPosition(place.geometry.location);
+                    marker2.setVisible(true);
+                    //gets the addres from place entered by users
+                    var address = '';
+                    if (place.address_components) {
+                        address = [
+                            (place.address_components[0] && place.address_components[0].short_name || ''), (place.address_components[1] && place.address_components[1].short_name || ''), (place.address_components[2] && place.address_components[2].short_name || '')
+                        ].join(' ');
+                    }
+
+                    infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+                    infowindow.open(map, startMarker);
+                });
+
+                // Sets a listener on a radio button to change the filter type on Places
+                // Autocomplete.
+
+                function setupClickListener(id, types) {
+                    var radioButton = document.getElementById(id);
+                    google.maps.event.addDomListener(radioButton, 'click', function () {
+                        autocomplete.setTypes(types);
+                    });
+                }
+
+                setupClickListener('changetype-all', []);
+                setupClickListener('changetype-establishment', ['establishment']);
+                setupClickListener('changetype-geocode', ['geocode']);
+                //navigator.geolocation.clearWatch(watchID);
+            }
+            function geolocationError(error) {
+                alert('Geolocation error! \n\n Error code: ' + error.code + '\n' + 'Error message: ' + error.message);
+            }
+
+
+            google.maps.event.addDomListener(window, 'load', initialize);
+        </script>
+    <body>
+        <input class="controls" id="pac-input" placeholder="Enter your destination" type="text">
+        <div class="controls" id="type-selector">
+            <input checked="checked" id="changetype-all" name="type" type="radio">
+            <label for="changetype-all">All</label>
+            <input id="changetype-establishment" name="type" type="radio">
+            <label for="changetype-establishment">Establishments</label>
+            <input id="changetype-geocode" name="type" type="radio">
+            <label for="changetype-geocode">Geocodes</label>
+        </div>
+        <div id="map-canvas"></div>
+    </body>
+</html>javascripts/jquery.min.js" type="text/javascript"></script>
         <script src="/javascripts/parse.min.js"></script>
         <script>
             Parse.initialize("jRXVsZkR2lXk7riaMoFpmVbjoYAyiZvgozzVgJpY", "UBc1sBjyo3DYGgA8UuTpvpFOZvgZvNUJ3Fs9UzZ2");
